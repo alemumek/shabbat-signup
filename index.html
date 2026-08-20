@@ -20,7 +20,7 @@
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        h2, h3 {
+        h2 {
             text-align: center;
             color: #2c3e50;
         }
@@ -39,8 +39,29 @@
             border-radius: 6px;
             box-sizing: border-box;
             font-size: 16px;
+            transition: all 0.3s ease;
         }
-        button {
+        /* עיצוב בולט לשדות בזמן עריכה */
+        .editing-mode input[type="text"], 
+        .editing-mode input[type="date"] {
+            border: 2px solid #e67e22;
+            background-color: #fffde7;
+            box-shadow: 0 0 8px rgba(230, 126, 34, 0.4);
+        }
+        .edit-banner {
+            display: none;
+            background-color: #e67e22;
+            color: white;
+            text-align: center;
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .editing-mode .edit-banner {
+            display: block;
+        }
+        button.submit-btn {
             width: 100%;
             padding: 12px;
             background-color: #3498db;
@@ -51,14 +72,38 @@
             cursor: pointer;
             font-weight: bold;
         }
-        button:hover {
+        button.submit-btn:hover {
             background-color: #2980b9;
         }
-        .list-section {
+        
+        /* עיצוב כרטיסיות (Tabs) */
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #ddd;
             margin-top: 30px;
-            border-top: 2px solid #eee;
-            padding-top: 15px;
+            margin-bottom: 15px;
         }
+        .tab-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            color: #7f8c8d;
+            font-weight: bold;
+        }
+        .tab-btn.active {
+            color: #3498db;
+            border-bottom: 3px solid #3498db;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
         .registration-item {
             background: #f9f9f9;
             padding: 12px;
@@ -69,6 +114,11 @@
             align-items: center;
             border-right: 4px solid #3498db;
         }
+        .history-item {
+            border-right: 4px solid #95a5a6;
+            background-color: #f0f0f0;
+            opacity: 0.8;
+        }
         .edit-btn {
             background-color: #e67e22;
             color: white;
@@ -76,7 +126,6 @@
             padding: 6px 12px;
             border-radius: 4px;
             cursor: pointer;
-            width: auto;
         }
         .edit-btn:hover {
             background-color: #d35400;
@@ -86,47 +135,85 @@
             margin-top: 10px;
             font-weight: bold;
         }
+        .error-msg {
+            color: #c0392b;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="container" id="mainContainer">
     <h2>הרשמה לשבת אצל ההורים 🍷</h2>
     
     <form id="regForm">
+        <div class="edit-banner" id="editBanner">✏️ מצב עריכה פעיל</div>
         <input type="hidden" id="editId">
         
         <div class="form-group">
             <label for="name">שם הזוג / המשפחה:</label>
-            <input type="text" id="name" required placeholder="לדוגמה: תמר ותומר">
+            <input type="text" id="name" required placeholder="לדוגמה: ישראל ותמר">
         </div>
         
         <div class="form-group">
-            <label for="date">תאריך יום השבת (שבת בבוקר):</label>
+            <label for="date">סופ"ש של שבת:</label>
             <input type="date" id="date" required>
+            <div id="dateError" class="error-msg">יש לבחור יום שישי או שבת בלבד.</div>
         </div>
         
-        <button type="submit" id="submitBtn">אישור הרשמה</button>
+        <button type="submit" id="submitBtn" class="submit-btn">אישור הרשמה</button>
     </form>
     
     <div id="status"></div>
 
-    <div class="list-section">
-        <h3>מי כבר נרשם? 📋</h3>
+    <div class="tabs">
+        <button class="tab-btn active" id="tab-future" onclick="switchTab('future')">הרשמות קרובות</button>
+        <button class="tab-btn" id="tab-history" onclick="switchTab('history')">היסטוריה</button>
+    </div>
+
+    <div id="futureView" class="tab-content active">
         <div id="registrationsList">טוען נתונים...</div>
+    </div>
+
+    <div id="historyView" class="tab-content">
+        <div id="historyList">טוען נתונים...</div>
     </div>
 </div>
 
 <script>
-    // החלף את הכתובת הזו ב-Web app URL שקיבלת מ-Google Apps Script
+    // יש להחליף לקישור שלך
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyx8KKFqdDnPcGoOlFpmpZ26yjmZaOsWJJ1DA73sOJFIlk58ukk-3z_VTZw3vZjiKvYOg/exec";
 
     const form = document.getElementById('regForm');
+    const container = document.getElementById('mainContainer');
     const submitBtn = document.getElementById('submitBtn');
     const statusDiv = document.getElementById('status');
     const listDiv = document.getElementById('registrationsList');
+    const historyListDiv = document.getElementById('historyList');
+    const dateInput = document.getElementById('date');
+    const dateError = document.getElementById('dateError');
 
-    // טעינת רשימת הנרשמים בעת טעינת העמוד
+    // חסימת תאריכי עבר בלוח השנה
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    dateInput.min = `${yyyy}-${mm}-${dd}`;
+
+    // ולידציה: מניעת בחירת אמצע שבוע (ראשון עד חמישי)
+    dateInput.addEventListener('change', function() {
+        const selectedDate = new Date(this.value);
+        const day = selectedDate.getDay(); // 0 = ראשון, 5 = שישי, 6 = שבת
+        if (day >= 0 && day <= 4) {
+            dateError.style.display = 'block';
+            this.value = ''; // מחיקת הבחירה השגויה
+        } else {
+            dateError.style.display = 'none';
+        }
+    });
+
     loadRegistrations();
 
     function loadRegistrations() {
@@ -134,26 +221,62 @@
             .then(res => res.json())
             .then(data => {
                 listDiv.innerHTML = '';
+                historyListDiv.innerHTML = '';
+                
                 if (data.length === 0) {
-                    listDiv.innerHTML = '<p style="text-align:center;">עדיין אף אחד לא נרשם. היו הראשונים!</p>';
+                    listDiv.innerHTML = '<p style="text-align:center;">אין הרשמות קרובות.</p>';
+                    historyListDiv.innerHTML = '<p style="text-align:center;">אין היסטוריית הרשמות.</p>';
                     return;
                 }
-                data.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'registration-item';
-                    
-                    // פורמט תאריך נקי
-                    const formattedDate = new Date(item.date).toLocaleDateString('he-IL');
 
-                    div.innerHTML = `
-                        <div>
-                            <strong>${item.name}</strong><br>
-                            <small>שבת בתאריך: ${formattedDate}</small>
-                        </div>
-                        <button class="edit-btn" onclick="setupEdit('${item.id}', '${item.name}', '${item.date}')">עריכה</button>
-                    `;
-                    listDiv.appendChild(div);
+                // מיון מהשבת הקרובה וקדימה
+                data.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                let futureCount = 0;
+                let historyCount = 0;
+                const now = new Date();
+
+                data.forEach(item => {
+                    const itemDate = new Date(item.date);
+                    const formattedDate = itemDate.toLocaleDateString('he-IL');
+
+                    // חישוב מוצאי שבת של התאריך הנבחר
+                    const itemDay = itemDate.getDay();
+                    const daysToSaturday = 6 - itemDay;
+                    const itemSaturday = new Date(itemDate);
+                    itemSaturday.setDate(itemSaturday.getDate() + daysToSaturday);
+                    itemSaturday.setHours(23, 59, 59, 999); // סוף יום שבת
+
+                    const div = document.createElement('div');
+                    
+                    // בדיקה האם עברנו את מוצאי השבת
+                    if (now <= itemSaturday) {
+                        futureCount++;
+                        div.className = 'registration-item';
+                        div.innerHTML = `
+                            <div>
+                                <strong>${item.name}</strong><br>
+                                <small>סופ"ש בתאריך: ${formattedDate}</small>
+                            </div>
+                            <button class="edit-btn" onclick="setupEdit('${item.id}', '${item.name}', '${item.date}')">עריכה</button>
+                        `;
+                        listDiv.appendChild(div);
+                    } else {
+                        historyCount++;
+                        div.className = 'registration-item history-item';
+                        div.innerHTML = `
+                            <div>
+                                <strong>${item.name}</strong><br>
+                                <small>התארחו בתאריך: ${formattedDate}</small>
+                            </div>
+                        `;
+                        // ללא כפתור עריכה בהיסטוריה
+                        historyListDiv.appendChild(div);
+                    }
                 });
+
+                if (futureCount === 0) listDiv.innerHTML = '<p style="text-align:center;">אין הרשמות עתידיות.</p>';
+                if (historyCount === 0) historyListDiv.innerHTML = '<p style="text-align:center;">אין היסטוריה.</p>';
             })
             .catch(err => {
                 listDiv.innerHTML = 'שגיאה בטעינת הנתונים.';
@@ -161,7 +284,6 @@
             });
     }
 
-    // הגשת טופס (הרשמה חדשה או עדכון)
     form.addEventListener('submit', e => {
         e.preventDefault();
         
@@ -180,10 +302,7 @@
         .then(res => res.json())
         .then(res => {
             statusDiv.innerText = id ? 'ההרשמה עודכנה בהצלחה!' : 'נרשמת בהצלחה!';
-            form.reset();
-            document.getElementById('editId').value = '';
-            submitBtn.innerText = 'אישור הרשמה';
-            submitBtn.disabled = false;
+            resetForm();
             loadRegistrations();
             setTimeout(() => statusDiv.innerText = '', 3000);
         })
@@ -194,14 +313,33 @@
         });
     });
 
-    // הכנת הטופס למצב עריכה
     function setupEdit(id, name, date) {
         document.getElementById('editId').value = id;
         document.getElementById('name').value = name;
-        // התאמת פורמט תאריך לשדה ה-HTML
         document.getElementById('date').value = date.split('T')[0];
+        
+        container.classList.add('editing-mode');
         submitBtn.innerText = 'עדכן הרשמה';
+        switchTab('future'); // חזרה לכרטיסייה הראשית בעת עריכה
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetForm() {
+        form.reset();
+        document.getElementById('editId').value = '';
+        container.classList.remove('editing-mode');
+        submitBtn.innerText = 'אישור הרשמה';
+        submitBtn.disabled = false;
+    }
+
+    function switchTab(tabId) {
+        document.getElementById('futureView').classList.remove('active');
+        document.getElementById('historyView').classList.remove('active');
+        document.getElementById('tab-future').classList.remove('active');
+        document.getElementById('tab-history').classList.remove('active');
+
+        document.getElementById(tabId + 'View').classList.add('active');
+        document.getElementById('tab-' + tabId).classList.add('active');
     }
 </script>
 
