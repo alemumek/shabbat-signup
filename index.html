@@ -61,8 +61,15 @@
         .editing-mode .edit-banner {
             display: block;
         }
+        
+        /* כפתורי הטופס */
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
         button.submit-btn {
-            width: 100%;
+            flex: 1;
             padding: 12px;
             background-color: #3498db;
             color: white;
@@ -74,6 +81,24 @@
         }
         button.submit-btn:hover {
             background-color: #2980b9;
+        }
+        button.cancel-btn {
+            display: none;
+            flex: 1;
+            padding: 12px;
+            background-color: #95a5a6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button.cancel-btn:hover {
+            background-color: #7f8c8d;
+        }
+        .editing-mode button.cancel-btn {
+            display: block;
         }
         
         /* עיצוב כרטיסיות (Tabs) */
@@ -172,7 +197,10 @@
             <div id="dateError" class="error-msg">יש לבחור יום שישי או שבת בלבד.</div>
         </div>
         
-        <button type="submit" id="submitBtn" class="submit-btn">אישור הרשמה</button>
+        <div class="form-actions">
+            <button type="submit" id="submitBtn" class="submit-btn">אישור הרשמה</button>
+            <button type="button" id="cancelBtn" class="cancel-btn" onclick="cancelEdit()">ביטול</button>
+        </div>
     </form>
     
     <div id="status"></div>
@@ -284,7 +312,6 @@
                     const satStr = saturday.toLocaleDateString('he-IL', heOptions);
                     
                     // המרה ל-ISO עבור קריאת ה-API
-                    // מתקן את השעון כדי לקבל YYYY-MM-DD מדויק
                     const satIsoDate = new Date(saturday.getTime() - (saturday.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
                     
                     // מזהה ייחודי עבור תגית הפרשה
@@ -296,7 +323,7 @@
 
                     const div = document.createElement('div');
                     
-                    // עיצוב תוכן הפריט (רלוונטי גם להיסטוריה וגם לעתיד)
+                    // עיצוב תוכן הפריט
                     const itemContent = `
                         <div>
                             <strong>${item.name}</strong><br>
@@ -372,8 +399,12 @@
         
         container.classList.add('editing-mode');
         submitBtn.innerText = 'עדכן הרשמה';
-        switchTab('future'); // חזרה לכרטיסייה הראשית בעת עריכה
+        switchTab('future'); 
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function cancelEdit() {
+        resetForm();
     }
 
     function resetForm() {
@@ -382,6 +413,7 @@
         container.classList.remove('editing-mode');
         submitBtn.innerText = 'אישור הרשמה';
         submitBtn.disabled = false;
+        dateError.style.display = 'none'; // איפוס הודעת שגיאה אם יש
     }
 
     function switchTab(tabId) {
