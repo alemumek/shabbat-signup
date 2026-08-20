@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>שבת אצל ההורים</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h2, h3 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="date"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .list-section {
+            margin-top: 30px;
+            border-top: 2px solid #eee;
+            padding-top: 15px;
+        }
+        .registration-item {
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-right: 4px solid #3498db;
+        }
+        .edit-btn {
+            background-color: #e67e22;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: auto;
+        }
+        .edit-btn:hover {
+            background-color: #d35400;
+        }
+        #status {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>הרשמה לשבת אצל ההורים 🍷</h2>
+    
+    <form id="regForm">
+        <input type="hidden" id="editId">
+        
+        <div class="form-group">
+            <label for="name">שם הזוג / המשפחה:</label>
+            <input type="text" id="name" required placeholder="לדוגמה: ישראל ותמר">
+        </div>
+        
+        <div class="form-group">
+            <label for="date">תאריך יום השבת (שבת בבוקר):</label>
+            <input type="date" id="date" required>
+        </div>
+        
+        <button type="submit" id="submitBtn">אישור הרשמה</button>
+    </form>
+    
+    <div id="status"></div>
+
+    <div class="list-section">
+        <h3>מי כבר נרשם? 📋</h3>
+        <div id="registrationsList">טוען נתונים...</div>
+    </div>
+</div>
+
+<script>
+    // החלף את הכתובת הזו ב-Web app URL שקיבלת מ-Google Apps Script
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyx8KKFqdDnPcGoOlFpmpZ26yjmZaOsWJJ1DA73sOJFIlk58ukk-3z_VTZw3vZjiKvYOg/exec";
+
+    const form = document.getElementById('regForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const statusDiv = document.getElementById('status');
+    const listDiv = document.getElementById('registrationsList');
+
+    // טעינת רשימת הנרשמים בעת טעינת העמוד
+    loadRegistrations();
+
+    function loadRegistrations() {
+        fetch(SCRIPT_URL)
+            .then(res => res.json())
+            .then(data => {
+                listDiv.innerHTML = '';
+                if (data.length === 0) {
+                    listDiv.innerHTML = '<p style="text-align:center;">עדיין אף אחד לא נרשם. היו הראשונים!</p>';
+                    return;
+                }
+                data.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'registration-item';
+                    
+                    // פורמט תאריך נקי
+                    const formattedDate = new Date(item.date).toLocaleDateString('he-IL');
+
+                    div.innerHTML = `
+                        <div>
+                            <strong>${item.name}</strong><br>
+                            <small>שבת בתאריך: ${formattedDate}</small>
+                        </div>
+                        <button class="edit-btn" onclick="setupEdit('${item.id}', '${item.name}', '${item.date}')">עריכה</button>
+                    `;
+                    listDiv.appendChild(div);
+                });
+            })
+            .catch(err => {
+                listDiv.innerHTML = 'שגיאה בטעינת הנתונים.';
+                console.error(err);
+            });
+    }
+
+    // הגשת טופס (הרשמה חדשה או עדכון)
+    form.addEventListener('submit', e => {
+        e.preventDefault();
+        
+        const id = document.getElementById('editId').value;
+        const name = document.getElementById('name').value;
+        const date = document.getElementById('date').value;
+        const action = id ? 'update' : 'add';
+
+        submitBtn.disabled = true;
+        statusDiv.innerText = 'שומר...';
+
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action, id, name, date })
+        })
+        .then(res => res.json())
+        .then(res => {
+            statusDiv.innerText = id ? 'ההרשמה עודכנה בהצלחה!' : 'נרשמת בהצלחה!';
+            form.reset();
+            document.getElementById('editId').value = '';
+            submitBtn.innerText = 'אישור הרשמה';
+            submitBtn.disabled = false;
+            loadRegistrations();
+            setTimeout(() => statusDiv.innerText = '', 3000);
+        })
+        .catch(err => {
+            statusDiv.innerText = 'ארעה שגיאה, נסה שוב.';
+            submitBtn.disabled = false;
+            console.error(err);
+        });
+    });
+
+    // הכנת הטופס למצב עריכה
+    function setupEdit(id, name, date) {
+        document.getElementById('editId').value = id;
+        document.getElementById('name').value = name;
+        // התאמת פורמט תאריך לשדה ה-HTML
+        document.getElementById('date').value = date.split('T')[0];
+        submitBtn.innerText = 'עדכן הרשמה';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>
