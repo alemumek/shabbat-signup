@@ -172,6 +172,31 @@
             color: #8e44ad;
             font-weight: bold;
         }
+
+        .whatsapp-container {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #e8f8f0;
+            border: 1px solid #25d366;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .whatsapp-btn {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 10px 18px;
+            background-color: #25d366;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 15px;
+            transition: background-color 0.2s ease;
+        }
+        .whatsapp-btn:hover {
+            background-color: #1ebe5d;
+        }
     </style>
 </head>
 <body>
@@ -202,6 +227,13 @@
     
     <div id="status"></div>
 
+    <div id="whatsappContainer" class="whatsapp-container">
+        <p id="whatsappMsgText" style="margin: 0 0 5px 0; font-weight: bold; color: #2e7d32;"></p>
+        <a id="whatsappBtn" href="#" target="_blank" class="whatsapp-btn">
+            📲 שתף הודעה בקבוצת ה-WhatsApp המשפחתית
+        </a>
+    </div>
+
     <div class="tabs">
         <button class="tab-btn active" id="tab-future" onclick="switchTab('future')">שבתות קרובות</button>
         <button class="tab-btn" id="tab-history" onclick="switchTab('history')">שבתות שהיו</button>
@@ -227,23 +259,61 @@
     const historyListDiv = document.getElementById('historyList');
     const dateInput = document.getElementById('date');
     const dateError = document.getElementById('dateError');
+    const whatsappContainer = document.getElementById('whatsappContainer');
 
+    // הגבלת תאריך מינימלי להיום
     const today = new Date();
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, '0');
     const dd = String(today.getDate()).padStart(2, '0');
     dateInput.min = `${yyyy}-${mm}-${dd}`;
 
-    dateInput.addEventListener('change', function() {
-        const selectedDate = new Date(this.value);
-        const day = selectedDate.getDay();
-        if (day >= 0 && day <= 4) {
+    /**
+     * בדיקה האם מחרוזת תאריך בפורמט YYYY-MM-DD מייצגת יום שישי (5) או שבת (6) לפי זמן מקומי
+     */
+    function isWeekend(dateString) {
+        if (!dateString) return false;
+        const parts = dateString.split('-');
+        if (parts.length !== 3) return false;
+        
+        const localDate = new Date(parts[0], parts[1] - 1, parts[2]);
+        const day = localDate.getDay();
+        
+        return day === 5 || day === 6;
+    }
+
+    /**
+     * פונקציית ולידציה לשדה התאריך
+     */
+    function validateDateInput() {
+        const val = dateInput.value;
+        if (val && !isWeekend(val)) {
             dateError.style.display = 'block';
-            this.value = '';
+            return false;
         } else {
             dateError.style.display = 'none';
+            return true;
         }
-    });
+    }
+
+    // האזנה בזמן אמת לשינוי תאריך
+    dateInput.addEventListener('change', validateDateInput);
+    dateInput.addEventListener('input', validateDateInput);
+
+    /**
+     * המרת מחרוזת תאריך מכל פורמט לתבנית YYYY-MM-DD מקומית מונעת הסטת UTC
+     */
+    function formatLocalYYYYMMDD(dateStr) {
+        if (!dateStr) return '';
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return '';
+        
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        
+        return `${year}-${month}-${day}`;
+    }
 
     async function getParasha(saturdayIsoDate, elementId) {
         try {
@@ -282,7 +352,6 @@
                 const futureData = [];
                 const historyData = [];
 
-                // חלוקה לשיבוצים עתידיים לעומת היסטוריים
                 data.forEach(item => {
                     const itemDate = new Date(item.date);
                     const day = itemDate.getDay();
@@ -302,20 +371,15 @@
                     }
                 });
 
-                // מיון עתיד: מהשבת הקרובה ביותר וקדימה (סדר עולה)
                 futureData.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-                // מיון היסטוריה: מהשבת האחרונה שהייתה ואחורה (סדר יורד)
                 historyData.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-                // רינדור עתידי
                 if (futureData.length === 0) {
                     listDiv.innerHTML = '<p style="text-align:center;">אין הרשמות עתידיות.</p>';
                 } else {
                     futureData.forEach((item, index) => renderItem(item, 'future-' + index, true, listDiv));
                 }
 
-                // רינדור היסטוריה
                 if (historyData.length === 0) {
                     historyListDiv.innerHTML = '<p style="text-align:center;">אין היסטוריה.</p>';
                 } else {
@@ -377,6 +441,12 @@
     form.addEventListener('submit', e => {
         e.preventDefault();
         
+        // עצירת השליחה במידה והתאריך אינו שישי/שבת
+        if (!validateDateInput() || !dateInput.value) {
+            dateError.style.display = 'block';
+            return;
+        }
+
         const id = document.getElementById('editId').value;
         const name = document.getElementById('name').value;
         const date = document.getElementById('date').value;
@@ -384,6 +454,7 @@
 
         submitBtn.disabled = true;
         statusDiv.innerText = 'שומר...';
+        whatsappContainer.style.display = 'none';
 
         fetch(SCRIPT_URL, {
             method: 'POST',
@@ -391,8 +462,11 @@
         })
         .then(res => res.json())
         .then(res => {
-            statusDiv.innerText = id ? 'ההרשמה עודכנה בהצלחה!' : 'נרשמת בהצלחה!';
-            resetForm();
+            const isUpdate = !!id;
+            statusDiv.innerText = isUpdate ? 'ההרשמה עודכנה בהצלחה!' : 'נרשמת בהצלחה!';
+            
+            setupWhatsAppShare(name, date, isUpdate);
+            resetFormInputs();
             loadRegistrations();
             setTimeout(() => statusDiv.innerText = '', 3000);
         })
@@ -403,11 +477,50 @@
         });
     });
 
+    function setupWhatsAppShare(name, rawDate, isUpdate) {
+        const parts = rawDate.split('-');
+        const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+        const day = dateObj.getDay();
+        
+        let friday = new Date(dateObj);
+        let saturday = new Date(dateObj);
+        
+        if (day === 5) {
+            saturday.setDate(friday.getDate() + 1);
+        } else if (day === 6) {
+            friday.setDate(saturday.getDate() - 1);
+        }
+
+        const heOptions = { day: '2-digit', month: '2-digit', year: 'numeric' };
+        const friStr = friday.toLocaleDateString('he-IL', heOptions);
+        const satStr = saturday.toLocaleDateString('he-IL', heOptions);
+
+        const actionTitle = isUpdate ? 'עודכנה הרשמה לשבת' : 'נרשמנו לשבת';
+        const message = `היי משפחה! 🍷\n` +
+                        `${actionTitle} אצל ההורים:\n` +
+                        `• משפחה: ${name}\n` +
+                        `• סופ"ש: ${friStr} - ${satStr}\n\n` +
+                        `שבת שלום!`;
+
+        const encodedMessage = encodeURIComponent(message);
+        const whatsappUrl = `https://api.whatsapp.com/send?text=${encodedMessage}`;
+
+        const btn = document.getElementById('whatsappBtn');
+        const msgText = document.getElementById('whatsappMsgText');
+
+        btn.href = whatsappUrl;
+        msgText.innerText = isUpdate ? 'העדכון נשמר בהצלחה!' : 'ההרשמה נשמרה בהצלחה!';
+        whatsappContainer.style.display = 'block';
+    }
+
     function setupEdit(id, name, date) {
         document.getElementById('editId').value = id;
         document.getElementById('name').value = name;
-        document.getElementById('date').value = date.split('T')[0];
         
+        // שימוש בפונקציית המרה מוגנת אזורי זמן
+        document.getElementById('date').value = formatLocalYYYYMMDD(date);
+        
+        whatsappContainer.style.display = 'none';
         container.classList.add('editing-mode');
         submitBtn.innerText = 'עדכן הרשמה';
         switchTab('future'); 
@@ -415,10 +528,11 @@
     }
 
     function cancelEdit() {
-        resetForm();
+        resetFormInputs();
+        whatsappContainer.style.display = 'none';
     }
 
-    function resetForm() {
+    function resetFormInputs() {
         form.reset();
         document.getElementById('editId').value = '';
         container.classList.remove('editing-mode');
