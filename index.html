@@ -261,16 +261,12 @@
     const dateError = document.getElementById('dateError');
     const whatsappContainer = document.getElementById('whatsappContainer');
 
-    // הגבלת תאריך מינימלי להיום
     const today = new Date();
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, '0');
     const dd = String(today.getDate()).padStart(2, '0');
     dateInput.min = `${yyyy}-${mm}-${dd}`;
 
-    /**
-     * בדיקה האם מחרוזת תאריך בפורמט YYYY-MM-DD מייצגת יום שישי (5) או שבת (6) לפי זמן מקומי
-     */
     function isWeekend(dateString) {
         if (!dateString) return false;
         const parts = dateString.split('-');
@@ -282,9 +278,6 @@
         return day === 5 || day === 6;
     }
 
-    /**
-     * פונקציית ולידציה לשדה התאריך
-     */
     function validateDateInput() {
         const val = dateInput.value;
         if (val && !isWeekend(val)) {
@@ -296,13 +289,9 @@
         }
     }
 
-    // האזנה בזמן אמת לשינוי תאריך
     dateInput.addEventListener('change', validateDateInput);
     dateInput.addEventListener('input', validateDateInput);
 
-    /**
-     * המרת מחרוזת תאריך מכל פורמט לתבנית YYYY-MM-DD מקומית מונעת הסטת UTC
-     */
     function formatLocalYYYYMMDD(dateStr) {
         if (!dateStr) return '';
         const d = new Date(dateStr);
@@ -441,7 +430,6 @@
     form.addEventListener('submit', e => {
         e.preventDefault();
         
-        // עצירת השליחה במידה והתאריך אינו שישי/שבת
         if (!validateDateInput() || !dateInput.value) {
             dateError.style.display = 'block';
             return;
@@ -477,6 +465,9 @@
         });
     });
 
+    /**
+     * פונקציה לבניית הודעת ה-WhatsApp המותאמת אישית
+     */
     function setupWhatsAppShare(name, rawDate, isUpdate) {
         const parts = rawDate.split('-');
         const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
@@ -491,16 +482,23 @@
             friday.setDate(saturday.getDate() - 1);
         }
 
-        const heOptions = { day: '2-digit', month: '2-digit', year: 'numeric' };
-        const friStr = friday.toLocaleDateString('he-IL', heOptions);
-        const satStr = saturday.toLocaleDateString('he-IL', heOptions);
+        // עיצוב התאריך בפורמט: DD-DD/MM/YYYY
+        const friDayStr = String(friday.getDate()).padStart(2, '0');
+        const satDayStr = String(saturday.getDate()).padStart(2, '0');
+        const monthStr = String(saturday.getMonth() + 1).padStart(2, '0');
+        const yearStr = saturday.getFullYear();
+        const dateFormatted = `${friDayStr}-${satDayStr}/${monthStr}/${yearStr}`;
 
-        const actionTitle = isUpdate ? 'עודכנה הרשמה לשבת' : 'נרשמנו לשבת';
-        const message = `היי משפחה! 🍷\n` +
-                        `${actionTitle} אצל ההורים:\n` +
-                        `• משפחה: ${name}\n` +
-                        `• סופ"ש: ${friStr} - ${satStr}\n\n` +
-                        `שבת שלום!`;
+        // שליפת הקישור הנוכחי לאפליקציה (GitHub Pages או כתובת הפיתוח)
+        const appUrl = window.location.href.split('#')[0];
+
+        const message = `מה נשמע שבט מקונן? 😎\n` +
+                        `לידיעתכם📯\n` +
+                        `רשימת שבת אצל ההורים התעדכנה📝\n` +
+                        `👨‍👩‍👧‍👦 משפחה: ${name}\n` +
+                        `📅 סופ״ש: ${dateFormatted}\n` +
+                        `🔗 לצפייה והרשמה: ${appUrl}\n` +
+                        `המשך יום נפלא! 😀`;
 
         const encodedMessage = encodeURIComponent(message);
         const whatsappUrl = `https://api.whatsapp.com/send?text=${encodedMessage}`;
@@ -516,8 +514,6 @@
     function setupEdit(id, name, date) {
         document.getElementById('editId').value = id;
         document.getElementById('name').value = name;
-        
-        // שימוש בפונקציית המרה מוגנת אזורי זמן
         document.getElementById('date').value = formatLocalYYYYMMDD(date);
         
         whatsappContainer.style.display = 'none';
