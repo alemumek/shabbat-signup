@@ -244,18 +244,17 @@ function createRegistrationCard(item, isFuture) {
   const dayOfWeek = dt.getDay();
   const isWeekend = (dayOfWeek === 5 || dayOfWeek === 6);
 
-  // בדיקת תרחישים לתגיות: חג בשבת, חג ביום חול, או שבת רגילה
+  // טיפול בתגיות התאימות
   if (item.eventName && isWeekend) {
-    // חג שחל בשבת: מציגים גם את השבת (כולל פרשה) וגם את החג
-    tagContainer.innerHTML = `<span class="parasha-label">טוען פרשה...</span> <span class="holiday-label">🍷 ${item.eventName}</span>`;
-    fetchParashaForSaturday(item.date, tagContainer, item.eventName);
+    // חג שחל בשבת: מציגים תגית שבת ותגית חג ללא בדיקת פרשה
+    tagContainer.innerHTML = `<span class="parasha-label">🕯️ שבת</span> <span class="holiday-label">🍷 ${item.eventName}</span>`;
   } else if (item.eventName) {
-    // חג ביום חול: מציגים רק את החג
+    // חג ביום חול: מציגים תגית חג בלבד
     tagContainer.innerHTML = `<span class="holiday-label">🍷 ${item.eventName}</span>`;
   } else {
-    // שבת רגילה (ללא חג): מציגים את השבת כולל הפרשה
+    // שבת רגילה: מציגים וטוענים את פרשת השבוע
     tagContainer.innerHTML = `<span class="parasha-label">טוען פרשה...</span>`;
-    fetchParashaForSaturday(item.date, tagContainer, null);
+    fetchParashaForSaturday(item.date, tagContainer);
   }
 
   infoDiv.appendChild(nameHead);
@@ -274,8 +273,8 @@ function createRegistrationCard(item, isFuture) {
   return card;
 }
 
-// שליפת פרשת השבוע עבור שבת והצגת תגיות מתאימות
-async function fetchParashaForSaturday(dateStr, containerElement, holidayName) {
+// שליפת פרשת השבוע עבור שבת רגילה
+async function fetchParashaForSaturday(dateStr, containerElement) {
   try {
     const [y, m, d] = dateStr.split('-').map(Number);
     const dt = new Date(y, m - 1, d);
@@ -293,25 +292,13 @@ async function fetchParashaForSaturday(dateStr, containerElement, holidayName) {
     const data = await response.json();
     const parashaItem = data.items && data.items.find(i => i.category === 'parashat');
 
-    let parashaHtml = '';
     if (parashaItem) {
-      parashaHtml = `<span class="parasha-label">📖 שבת ${parashaItem.hebrew}</span>`;
+      containerElement.innerHTML = `<span class="parasha-label">📖 שבת ${parashaItem.hebrew}</span>`;
     } else {
-      parashaHtml = `<span class="parasha-label">🕯️ שבת</span>`;
-    }
-
-    if (holidayName) {
-      containerElement.innerHTML = `${parashaHtml} <span class="holiday-label">🍷 ${holidayName}</span>`;
-    } else {
-      containerElement.innerHTML = parashaHtml;
+      containerElement.innerHTML = `<span class="parasha-label">🕯️ שבת</span>`;
     }
   } catch (error) {
-    let parashaHtml = `<span class="parasha-label">🕯️ שבת</span>`;
-    if (holidayName) {
-      containerElement.innerHTML = `${parashaHtml} <span class="holiday-label">🍷 ${holidayName}</span>`;
-    } else {
-      containerElement.innerHTML = parashaHtml;
-    }
+    containerElement.innerHTML = `<span class="parasha-label">🕯️ שבת</span>`;
   }
 }
 
