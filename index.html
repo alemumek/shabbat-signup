@@ -1,552 +1,77 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>שבת אצל ההורים</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f6f8;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-            background: #ffffff;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        h2 {
-            text-align: center;
-            color: #2c3e50;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input[type="text"], input[type="date"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-        .editing-mode input[type="text"], 
-        .editing-mode input[type="date"] {
-            border: 2px solid #e67e22;
-            background-color: #fffde7;
-            box-shadow: 0 0 8px rgba(230, 126, 34, 0.4);
-        }
-        .edit-banner {
-            display: none;
-            background-color: #e67e22;
-            color: white;
-            text-align: center;
-            padding: 8px;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-        .editing-mode .edit-banner {
-            display: block;
-        }
-        
-        .form-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        button.submit-btn {
-            flex: 1;
-            padding: 12px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        button.submit-btn:hover {
-            background-color: #2980b9;
-        }
-        button.cancel-btn {
-            display: none;
-            flex: 1;
-            padding: 12px;
-            background-color: #95a5a6;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        button.cancel-btn:hover {
-            background-color: #7f8c8d;
-        }
-        .editing-mode button.cancel-btn {
-            display: block;
-        }
-        
-        .tabs {
-            display: flex;
-            border-bottom: 2px solid #ddd;
-            margin-top: 30px;
-            margin-bottom: 15px;
-        }
-        .tab-btn {
-            flex: 1;
-            background: none;
-            border: none;
-            padding: 10px;
-            font-size: 16px;
-            cursor: pointer;
-            color: #7f8c8d;
-            font-weight: bold;
-        }
-        .tab-btn.active {
-            color: #3498db;
-            border-bottom: 3px solid #3498db;
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
-
-        .registration-item {
-            background: #f9f9f9;
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-right: 4px solid #3498db;
-        }
-        .history-item {
-            border-right: 4px solid #95a5a6;
-            background-color: #f0f0f0;
-            opacity: 0.8;
-        }
-        .edit-btn {
-            background-color: #e67e22;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .edit-btn:hover {
-            background-color: #d35400;
-        }
-        #status {
-            text-align: center;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-        .error-msg {
-            color: #c0392b;
-            font-size: 14px;
-            margin-top: 5px;
-            display: none;
-        }
-        .meta-info {
-            color: #555;
-            font-size: 0.9em;
-            margin-top: 4px;
-        }
-        .parasha-label {
-            color: #8e44ad;
-            font-weight: bold;
-        }
-
-        .whatsapp-container {
-            display: none;
-            margin-top: 15px;
-            padding: 15px;
-            background-color: #e8f8f0;
-            border: 1px solid #25d366;
-            border-radius: 8px;
-            text-align: center;
-        }
-        .whatsapp-btn {
-            display: inline-block;
-            margin-top: 8px;
-            padding: 10px 18px;
-            background-color: #25d366;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 15px;
-            transition: background-color 0.2s ease;
-        }
-        .whatsapp-btn:hover {
-            background-color: #1ebe5d;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>שבת וחג אצל ההורים 🍷</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="container">
+    <header>
+      <h1>שבת וחג אצל ההורים 🍷</h1>
+      <p class="subtitle">תיאום והרשמה לשבט מקונן</p>
+    </header>
 
-<div class="container" id="mainContainer">
-    <h2>הרשמה לשבת אצל ההורים 🍷</h2>
-    
-    <form id="regForm">
-        <div class="edit-banner" id="editBanner">✏️ מצב עריכה פעיל</div>
-        <input type="hidden" id="editId">
+    <!-- טופס הרשמה ועריכה -->
+    <section class="card form-card" id="formCard">
+      <div id="editBanner" class="edit-banner" style="display: none;">
+        ✏️ מצב עריכה פעיל
+      </div>
+      
+      <form id="signupForm">
+        <input type="hidden" id="editId" value="">
         
         <div class="form-group">
-            <label for="name">שם הזוג / המשפחה:</label>
-            <input type="text" id="name" required placeholder="לדוגמה: תמר ותומר">
+          <label for="name">שם המשפחה / הזוג:</label>
+          <input type="text" id="name" placeholder="לדוגמה: תמר ותומר" required>
         </div>
-        
+
         <div class="form-group">
-            <label for="date">סופ"ש של שבת:</label>
-            <input type="date" id="date" required>
-            <div id="dateError" class="error-msg">יש לבחור יום שישי או שבת בלבד.</div>
+          <label for="date">תאריך סופ"ש / חג:</label>
+          <input type="date" id="date" required>
+          <div id="dateError" class="error-msg" style="display: none;"></div>
         </div>
-        
+
         <div class="form-actions">
-            <button type="submit" id="submitBtn" class="submit-btn">אישור הרשמה</button>
-            <button type="button" id="cancelBtn" class="cancel-btn" onclick="cancelEdit()">ביטול</button>
+          <button type="submit" id="submitBtn" class="btn btn-primary">אישור הרשמה</button>
+          <button type="button" id="cancelBtn" class="btn btn-secondary" style="display: none;" onclick="cancelEdit()">ביטול</button>
         </div>
-    </form>
-    
-    <div id="status"></div>
+      </form>
 
-    <div id="whatsappContainer" class="whatsapp-container">
-        <p id="whatsappMsgText" style="margin: 0 0 5px 0; font-weight: bold; color: #2e7d32;"></p>
-        <a id="whatsappBtn" href="#" target="_blank" class="whatsapp-btn">
-            📲 שתף הודעה בקבוצת ה-WhatsApp המשפחתית
+      <div id="formStatus" class="form-status"></div>
+
+      <!-- מכולת שיתוף ב-WhatsApp -->
+      <div id="whatsappContainer" class="whatsapp-container" style="display: none;">
+        <p>ההרשמה נשמרה בהצלחה! שתף בקבוצה המשפחתית:</p>
+        <a id="whatsappShareBtn" href="#" target="_blank" class="btn btn-whatsapp">
+          💬 שיתוף ב-WhatsApp
         </a>
-    </div>
+      </div>
+    </section>
 
-    <div class="tabs">
-        <button class="tab-btn active" id="tab-future" onclick="switchTab('future')">שבתות קרובות</button>
-        <button class="tab-btn" id="tab-history" onclick="switchTab('history')">שבתות שהיו</button>
-    </div>
+    <!-- ניווט בלשיות -->
+    <nav class="tabs-nav">
+      <button class="tab-btn active" id="tabFuture" onclick="switchTab('future')">שבתות וחגים קרובים</button>
+      <button class="tab-btn" id="tabHistory" onclick="switchTab('history')">אירועים שהיו</button>
+    </nav>
 
-    <div id="futureView" class="tab-content active">
-        <div id="registrationsList">טוען נתונים...</div>
-    </div>
+    <!-- תצוגת רשימות -->
+    <main>
+      <section id="futureView" class="tab-content active">
+        <div id="futureList" class="registrations-list">
+          <div class="loading">טוען נתונים...</div>
+        </div>
+      </section>
 
-    <div id="historyView" class="tab-content">
-        <div id="historyList">טוען נתונים...</div>
-    </div>
-</div>
+      <section id="historyView" class="tab-content" style="display: none;">
+        <div id="historyList" class="registrations-list">
+          <div class="loading">טוען נתונים...</div>
+        </div>
+      </section>
+    </main>
+  </div>
 
-<script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyx8KKFqdDnPcGoOlFpmpZ26yjmZaOsWJJ1DA73sOJFIlk58ukk-3z_VTZw3vZjiKvYOg/exec";
-
-    const form = document.getElementById('regForm');
-    const container = document.getElementById('mainContainer');
-    const submitBtn = document.getElementById('submitBtn');
-    const statusDiv = document.getElementById('status');
-    const listDiv = document.getElementById('registrationsList');
-    const historyListDiv = document.getElementById('historyList');
-    const dateInput = document.getElementById('date');
-    const dateError = document.getElementById('dateError');
-    const whatsappContainer = document.getElementById('whatsappContainer');
-
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    dateInput.min = `${yyyy}-${mm}-${dd}`;
-
-    function isWeekend(dateString) {
-        if (!dateString) return false;
-        const parts = dateString.split('-');
-        if (parts.length !== 3) return false;
-        
-        const localDate = new Date(parts[0], parts[1] - 1, parts[2]);
-        const day = localDate.getDay();
-        
-        return day === 5 || day === 6;
-    }
-
-    function validateDateInput() {
-        const val = dateInput.value;
-        if (val && !isWeekend(val)) {
-            dateError.style.display = 'block';
-            return false;
-        } else {
-            dateError.style.display = 'none';
-            return true;
-        }
-    }
-
-    dateInput.addEventListener('change', validateDateInput);
-    dateInput.addEventListener('input', validateDateInput);
-
-    function formatLocalYYYYMMDD(dateStr) {
-        if (!dateStr) return '';
-        const d = new Date(dateStr);
-        if (isNaN(d.getTime())) return '';
-        
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        
-        return `${year}-${month}-${day}`;
-    }
-
-    async function getParasha(saturdayIsoDate, elementId) {
-        try {
-            const response = await fetch(`https://www.hebcal.com/hebcal?v=1&cfg=json&start=${saturdayIsoDate}&end=${saturdayIsoDate}&s=on`);
-            const data = await response.json();
-            const parashaItem = data.items.find(item => item.category === 'parashat');
-            const element = document.getElementById(elementId);
-            if (element) {
-                element.innerText = parashaItem ? parashaItem.hebrew : 'לא נמצאה פרשה';
-            }
-        } catch (error) {
-            console.error("Error fetching parasha:", error);
-            const element = document.getElementById(elementId);
-            if (element) {
-                element.innerText = 'שגיאה בטעינה';
-            }
-        }
-    }
-
-    loadRegistrations();
-
-    function loadRegistrations() {
-        fetch(SCRIPT_URL)
-            .then(res => res.json())
-            .then(data => {
-                listDiv.innerHTML = '';
-                historyListDiv.innerHTML = '';
-                
-                if (data.length === 0) {
-                    listDiv.innerHTML = '<p style="text-align:center;">אין הרשמות קרובות.</p>';
-                    historyListDiv.innerHTML = '<p style="text-align:center;">אין היסטוריית הרשמות.</p>';
-                    return;
-                }
-
-                const now = new Date();
-                const futureData = [];
-                const historyData = [];
-
-                data.forEach(item => {
-                    const itemDate = new Date(item.date);
-                    const day = itemDate.getDay();
-                    
-                    let saturday = new Date(itemDate);
-                    if (day === 5) {
-                        saturday.setDate(itemDate.getDate() + 1);
-                    }
-
-                    const endOfSaturday = new Date(saturday);
-                    endOfSaturday.setHours(23, 59, 59, 999);
-
-                    if (now <= endOfSaturday) {
-                        futureData.push(item);
-                    } else {
-                        historyData.push(item);
-                    }
-                });
-
-                futureData.sort((a, b) => new Date(a.date) - new Date(b.date));
-                historyData.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-                if (futureData.length === 0) {
-                    listDiv.innerHTML = '<p style="text-align:center;">אין הרשמות עתידיות.</p>';
-                } else {
-                    futureData.forEach((item, index) => renderItem(item, 'future-' + index, true, listDiv));
-                }
-
-                if (historyData.length === 0) {
-                    historyListDiv.innerHTML = '<p style="text-align:center;">אין היסטוריה.</p>';
-                } else {
-                    historyData.forEach((item, index) => renderItem(item, 'history-' + index, false, historyListDiv));
-                }
-            })
-            .catch(err => {
-                listDiv.innerHTML = 'שגיאה בטעינת הנתונים.';
-                console.error(err);
-            });
-    }
-
-    function renderItem(item, uniqueId, isFuture, parentContainer) {
-        const itemDate = new Date(item.date);
-        const day = itemDate.getDay();
-        
-        let friday = new Date(itemDate);
-        let saturday = new Date(itemDate);
-        
-        if (day === 5) {
-            saturday.setDate(friday.getDate() + 1);
-        } else if (day === 6) {
-            friday.setDate(saturday.getDate() - 1);
-        }
-
-        const heOptions = { day: '2-digit', month: '2-digit', year: 'numeric' };
-        const friStr = friday.toLocaleDateString('he-IL', heOptions);
-        const satStr = saturday.toLocaleDateString('he-IL', heOptions);
-        
-        const satIsoDate = new Date(saturday.getTime() - (saturday.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
-        const parashaId = 'parasha-' + uniqueId;
-
-        const div = document.createElement('div');
-        const itemContent = `
-            <div>
-                <strong>${item.name}</strong><br>
-                <div class="meta-info">
-                    שישי - שבת: ${friStr} - ${satStr}<br>
-                    פרשת השבוע: <span id="${parashaId}" class="parasha-label">טוען...</span>
-                </div>
-            </div>
-        `;
-
-        if (isFuture) {
-            div.className = 'registration-item';
-            div.innerHTML = `
-                ${itemContent}
-                <button class="edit-btn" onclick="setupEdit('${item.id}', '${item.name}', '${item.date}')">עריכה</button>
-            `;
-        } else {
-            div.className = 'registration-item history-item';
-            div.innerHTML = itemContent;
-        }
-
-        parentContainer.appendChild(div);
-        getParasha(satIsoDate, parashaId);
-    }
-
-    form.addEventListener('submit', e => {
-        e.preventDefault();
-        
-        if (!validateDateInput() || !dateInput.value) {
-            dateError.style.display = 'block';
-            return;
-        }
-
-        const id = document.getElementById('editId').value;
-        const name = document.getElementById('name').value;
-        const date = document.getElementById('date').value;
-        const action = id ? 'update' : 'add';
-
-        submitBtn.disabled = true;
-        statusDiv.innerText = 'שומר...';
-        whatsappContainer.style.display = 'none';
-
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify({ action, id, name, date })
-        })
-        .then(res => res.json())
-        .then(res => {
-            const isUpdate = !!id;
-            statusDiv.innerText = isUpdate ? 'ההרשמה עודכנה בהצלחה!' : 'נרשמת בהצלחה!';
-            
-            setupWhatsAppShare(name, date, isUpdate);
-            resetFormInputs();
-            loadRegistrations();
-            setTimeout(() => statusDiv.innerText = '', 3000);
-        })
-        .catch(err => {
-            statusDiv.innerText = 'ארעה שגיאה, נסה שוב.';
-            submitBtn.disabled = false;
-            console.error(err);
-        });
-    });
-
-    /**
-     * פונקציה לבניית הודעת ה-WhatsApp המותאמת אישית
-     */
-    function setupWhatsAppShare(name, rawDate, isUpdate) {
-        const parts = rawDate.split('-');
-        const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
-        const day = dateObj.getDay();
-        
-        let friday = new Date(dateObj);
-        let saturday = new Date(dateObj);
-        
-        if (day === 5) {
-            saturday.setDate(friday.getDate() + 1);
-        } else if (day === 6) {
-            friday.setDate(saturday.getDate() - 1);
-        }
-
-        // עיצוב התאריך בפורמט: DD-DD/MM/YYYY
-        const friDayStr = String(friday.getDate()).padStart(2, '0');
-        const satDayStr = String(saturday.getDate()).padStart(2, '0');
-        const monthStr = String(saturday.getMonth() + 1).padStart(2, '0');
-        const yearStr = saturday.getFullYear();
-        const dateFormatted = `${friDayStr}-${satDayStr}/${monthStr}/${yearStr}`;
-
-        // שליפת הקישור הנוכחי לאפליקציה (GitHub Pages או כתובת הפיתוח)
-        const appUrl = window.location.href.split('#')[0];
-
-        const message = `מה נשמע שבט מקונן? 😎\n` +
-                        `לידיעתכם📯\n` +
-                        `רשימת שבת אצל ההורים התעדכנה📝\n` +
-                        `👨‍👩‍👧‍👦 משפחה: ${name}\n` +
-                        `📅 סופ״ש: ${dateFormatted}\n` +
-                        `🔗 לצפייה והרשמה: ${appUrl}\n` +
-                        `המשך יום נפלא! 😀`;
-
-        const encodedMessage = encodeURIComponent(message);
-        const whatsappUrl = `https://api.whatsapp.com/send?text=${encodedMessage}`;
-
-        const btn = document.getElementById('whatsappBtn');
-        const msgText = document.getElementById('whatsappMsgText');
-
-        btn.href = whatsappUrl;
-        msgText.innerText = isUpdate ? 'העדכון נשמר בהצלחה!' : 'ההרשמה נשמרה בהצלחה!';
-        whatsappContainer.style.display = 'block';
-    }
-
-    function setupEdit(id, name, date) {
-        document.getElementById('editId').value = id;
-        document.getElementById('name').value = name;
-        document.getElementById('date').value = formatLocalYYYYMMDD(date);
-        
-        whatsappContainer.style.display = 'none';
-        container.classList.add('editing-mode');
-        submitBtn.innerText = 'עדכן הרשמה';
-        switchTab('future'); 
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function cancelEdit() {
-        resetFormInputs();
-        whatsappContainer.style.display = 'none';
-    }
-
-    function resetFormInputs() {
-        form.reset();
-        document.getElementById('editId').value = '';
-        container.classList.remove('editing-mode');
-        submitBtn.innerText = 'אישור הרשמה';
-        submitBtn.disabled = false;
-        dateError.style.display = 'none';
-    }
-
-    function switchTab(tabId) {
-        document.getElementById('futureView').classList.remove('active');
-        document.getElementById('historyView').classList.remove('active');
-        document.getElementById('tab-future').classList.remove('active');
-        document.getElementById('tab-history').classList.remove('active');
-
-        document.getElementById(tabId + 'View').classList.add('active');
-        document.getElementById('tab-' + tabId).classList.add('active');
-    }
-</script>
-
+  <script src="app.js"></script>
 </body>
 </html>
