@@ -1,5 +1,5 @@
 // הגדרות קונפיגורציה - חובה להחליף ב-URL המלא של ה-Web App שלכם מ-Google Apps Script
-const BACKEND_URL = 'https://script.google.com/macros/s/YOUR_EXEC_ID/exec'; 
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbw8HqfAwKkgGz6Xyxj-p24cW954cemIEpVB4cHgy1q8QD4LW5R5S44cMlHD1WuwrKo-Qw/exec'; 
 
 // ניהול State
 let registrationsCache = [];
