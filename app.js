@@ -1,5 +1,5 @@
-// הגדרות קונפיגורציה
-const BACKEND_URL = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL'; // יש להחליף ב-URL של ה-Web App
+// הגדרות קונפיגורציה - חובה להחליף ב-URL המלא של ה-Web App שלכם מ-Google Apps Script
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbw8HqfAwKkgGz6Xyxj-p24cW954cemIEpVB4cHgy1q8QD4LW5R5S44cMlHD1WuwrKo-Qw/exec'; 
 
 // ניהול State
 let registrationsCache = [];
@@ -156,6 +156,12 @@ async function loadRegistrations() {
   const futureList = document.getElementById('futureList');
   const historyList = document.getElementById('historyList');
 
+  if (BACKEND_URL.includes('YOUR_EXEC_ID')) {
+    futureList.innerHTML = '<div class="empty-msg" style="color: #e74c3c;">שגיאה: חסר URL מוזן של Google Apps Script ב-app.js</div>';
+    historyList.innerHTML = '<div class="empty-msg" style="color: #e74c3c;">שגיאה: חסר URL מוזן של Google Apps Script ב-app.js</div>';
+    return;
+  }
+
   try {
     const response = await fetch(BACKEND_URL);
     const result = await response.json();
@@ -168,8 +174,8 @@ async function loadRegistrations() {
     }
   } catch (error) {
     console.error('Load error:', error);
-    futureList.innerHTML = '<div class="empty-msg">שגיאה בטעינת נתונים.</div>';
-    historyList.innerHTML = '<div class="empty-msg">שגיאה בטעינת נתונים.</div>';
+    futureList.innerHTML = '<div class="empty-msg">שגיאה בטעינת נתונים. ודא שהשרת זמין.</div>';
+    historyList.innerHTML = '<div class="empty-msg">שגיאה בטעינת נתונים. ודא שהשרת זמין.</div>';
   }
 }
 
