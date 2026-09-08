@@ -1,0 +1,257 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  background-color: #f4f7f6;
+  color: #2c3e50;
+  direction: rtl;
+  padding: 20px 10px;
+  line-height: 1.5;
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+header h1 {
+  color: #2c3e50;
+  font-size: 1.8rem;
+}
+
+.subtitle {
+  color: #7f8c8d;
+  font-size: 0.95rem;
+}
+
+/* כרטיס טופס */
+.card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #cccccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+}
+
+.form-group input:focus {
+  border-color: #3498db;
+}
+
+/* מצב עריכה */
+.editing-mode {
+  border: 2px solid #e67e22 !important;
+  background-color: #fffde7 !important;
+  box-shadow: 0 4px 12px rgba(230, 126, 34, 0.2);
+}
+
+.editing-mode input {
+  border-color: #e67e22;
+  background-color: #ffffff;
+}
+
+.edit-banner {
+  background-color: #e67e22;
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+/* כפתורים */
+.form-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.btn-primary {
+  background-color: #3498db;
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background-color: #2980b9;
+}
+
+.btn-secondary {
+  background-color: #95a5a6;
+  color: #ffffff;
+}
+
+.btn-secondary:hover {
+  background-color: #7f8c8d;
+}
+
+.btn-edit {
+  background-color: #e67e22;
+  color: #ffffff;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-whatsapp {
+  background-color: #25d366;
+  color: #ffffff;
+  display: block;
+  margin-top: 10px;
+}
+
+.btn-whatsapp:hover {
+  background-color: #1ebc57;
+}
+
+.error-msg {
+  color: #e74c3c;
+  font-size: 0.85rem;
+  margin-top: 5px;
+}
+
+.form-status {
+  margin-top: 10px;
+  font-weight: bold;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.whatsapp-container {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #eeeeee;
+  text-align: center;
+}
+
+/* לשוניות */
+.tabs-nav {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #dddddd;
+  background-color: #ffffff;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #7f8c8d;
+}
+
+.tab-btn.active {
+  background-color: #3498db;
+  color: #ffffff;
+  border-color: #3498db;
+}
+
+/* רשימות הרשמה */
+.registrations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reg-item {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-right: 5px solid #3498db;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+}
+
+.reg-info h3 {
+  font-size: 1.1rem;
+  margin-bottom: 4px;
+}
+
+.reg-date {
+  font-size: 0.9rem;
+  color: #555555;
+}
+
+/* תוויות אירוע */
+.parasha-label {
+  display: inline-block;
+  background-color: #8e44ad;
+  color: #ffffff;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+.holiday-label {
+  display: inline-block;
+  background-color: #f39c12;
+  color: #ffffff;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+.history-item {
+  opacity: 0.7;
+  border-right-color: #bdc3c7;
+}
+
+.loading, .empty-msg {
+  text-align: center;
+  color: #7f8c8d;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 8px;
+}
