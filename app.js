@@ -1,5 +1,5 @@
 // הגדרות קונפיגורציה - חובה להחליף ב-URL המלא של ה-Web App שלכם מ-Google Apps Script
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbw8HqfAwKkgGz6Xyxj-p24cW954cemIEpVB4cHgy1q8QD4LW5R5S44cMlHD1WuwrKo-Qw/exec'; 
+const BACKEND_URL = 'https://script.google.com/macros/s/YOUR_EXEC_ID/exec'; 
 
 // ניהול State
 let registrationsCache = [];
@@ -65,6 +65,21 @@ async function validateDateInput() {
     return false;
   }
 
+  // חיווי טעינה בזמן בדיקה מול Hebcal
+  dateError.textContent = 'בודק תאריך מול לוח השנה...';
+  dateError.style.color = '#7f8c8d';
+  dateError.style.display = 'block';
+
+  // 1. בדיקה ראשונה: האם התאריך הוא חג או ערב חג
+  const holidayName = await fetchHolidayName(selectedDateStr);
+
+  if (holidayName) {
+    detectedEventName = holidayName;
+    dateError.style.display = 'none';
+    return true;
+  }
+
+  // 2. בדיקה שנייה: במידה ואינו חג, בודקים אם מדובר בסוף שבוע רגיל (שישי או שבת)
   const [year, month, day] = selectedDateStr.split('-').map(Number);
   const selectedDate = new Date(year, month - 1, day);
   const dayOfWeek = selectedDate.getDay(); // 5 = שישי, 6 = שבת
@@ -76,24 +91,12 @@ async function validateDateInput() {
     return true;
   }
 
-  // חיווי טעינה בזמן בדיקה מול Hebcal
-  dateError.textContent = 'בודק אם התאריך הוא יום חג...';
-  dateError.style.color = '#7f8c8d';
+  // 3. תאריך חול שאינו יום חג
+  detectedEventName = '';
+  dateError.textContent = 'ניתן לבחור ימי שישי, שבת או ימי חג בלבד.';
+  dateError.style.color = '#e74c3c';
   dateError.style.display = 'block';
-
-  const holidayName = await fetchHolidayName(selectedDateStr);
-
-  if (holidayName) {
-    detectedEventName = holidayName;
-    dateError.style.display = 'none';
-    return true;
-  } else {
-    detectedEventName = '';
-    dateError.textContent = 'ניתן לבחור ימי שישי, שבת או ימי חג בלבד.';
-    dateError.style.color = '#e74c3c';
-    dateError.style.display = 'block';
-    return false;
-  }
+  return false;
 }
 
 // טיפול בשליחת הטופס
@@ -236,11 +239,23 @@ function createRegistrationCard(item, isFuture) {
   const tagContainer = document.createElement('div');
   tagContainer.id = `tag-${item.id}`;
 
-  if (item.eventName) {
+  const [y, m, d] = item.date.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  const dayOfWeek = dt.getDay();
+  const isWeekend = (dayOfWeek === 5 || dayOfWeek === 6);
+
+  // בדיקת תרחישים לתגיות: חג בשבת, חג ביום חול, או שבת רגילה
+  if (item.eventName && isWeekend) {
+    // חג שחל בשבת: מציגים גם את השבת (כולל פרשה) וגם את החג
+    tagContainer.innerHTML = `<span class="parasha-label">טוען פרשה...</span> <span class="holiday-label">🍷 ${item.eventName}</span>`;
+    fetchParashaForSaturday(item.date, tagContainer, item.eventName);
+  } else if (item.eventName) {
+    // חג ביום חול: מציגים רק את החג
     tagContainer.innerHTML = `<span class="holiday-label">🍷 ${item.eventName}</span>`;
   } else {
+    // שבת רגילה (ללא חג): מציגים את השבת כולל הפרשה
     tagContainer.innerHTML = `<span class="parasha-label">טוען פרשה...</span>`;
-    fetchParashaForSaturday(item.date, tagContainer);
+    fetchParashaForSaturday(item.date, tagContainer, null);
   }
 
   infoDiv.appendChild(nameHead);
@@ -259,8 +274,8 @@ function createRegistrationCard(item, isFuture) {
   return card;
 }
 
-// שליפת פרשת השבוע עבור שבת
-async function fetchParashaForSaturday(dateStr, containerElement) {
+// שליפת פרשת השבוע עבור שבת והצגת תגיות מתאימות
+async function fetchParashaForSaturday(dateStr, containerElement, holidayName) {
   try {
     const [y, m, d] = dateStr.split('-').map(Number);
     const dt = new Date(y, m - 1, d);
@@ -278,13 +293,25 @@ async function fetchParashaForSaturday(dateStr, containerElement) {
     const data = await response.json();
     const parashaItem = data.items && data.items.find(i => i.category === 'parashat');
 
+    let parashaHtml = '';
     if (parashaItem) {
-      containerElement.innerHTML = `<span class="parasha-label">📖 ${parashaItem.hebrew}</span>`;
+      parashaHtml = `<span class="parasha-label">📖 שבת ${parashaItem.hebrew}</span>`;
     } else {
-      containerElement.innerHTML = `<span class="parasha-label">שבת</span>`;
+      parashaHtml = `<span class="parasha-label">🕯️ שבת</span>`;
+    }
+
+    if (holidayName) {
+      containerElement.innerHTML = `${parashaHtml} <span class="holiday-label">🍷 ${holidayName}</span>`;
+    } else {
+      containerElement.innerHTML = parashaHtml;
     }
   } catch (error) {
-    containerElement.innerHTML = `<span class="parasha-label">שבת</span>`;
+    let parashaHtml = `<span class="parasha-label">🕯️ שבת</span>`;
+    if (holidayName) {
+      containerElement.innerHTML = `${parashaHtml} <span class="holiday-label">🍷 ${holidayName}</span>`;
+    } else {
+      containerElement.innerHTML = parashaHtml;
+    }
   }
 }
 
@@ -292,8 +319,10 @@ async function fetchParashaForSaturday(dateStr, containerElement) {
 function formatCardDateDisplay(dateStr, eventName) {
   const [y, m, d] = dateStr.split('-').map(Number);
   const dt = new Date(y, m - 1, d);
+  const dayOfWeek = dt.getDay();
+  const isWeekend = (dayOfWeek === 5 || dayOfWeek === 6);
 
-  if (eventName) {
+  if (eventName && !isWeekend) {
     return `יום ${getHebrewDayName(dt.getDay())}, ${formatDateIL(dt)}`;
   } else {
     const friday = new Date(dt);
@@ -383,9 +412,23 @@ function switchTab(tabId) {
 function setupWhatsAppShare(name, dateStr, eventName) {
   const [y, m, d] = dateStr.split('-').map(Number);
   const dt = new Date(y, m - 1, d);
+  const dayOfWeek = dt.getDay();
+  const isWeekend = (dayOfWeek === 5 || dayOfWeek === 6);
 
   let dateDetail = '';
-  if (eventName) {
+  if (eventName && isWeekend) {
+    const friday = new Date(dt);
+    if (dt.getDay() === 6) friday.setDate(dt.getDate() - 1);
+    const saturday = new Date(friday);
+    saturday.setDate(friday.getDate() + 1);
+
+    const fDay = String(friday.getDate()).padStart(2, '0');
+    const sDay = String(saturday.getDate()).padStart(2, '0');
+    const month = String(friday.getMonth() + 1).padStart(2, '0');
+    const year = friday.getFullYear();
+
+    dateDetail = `🍷 שבת וחג: ${eventName} (${fDay}-${sDay}/${month}/${year})`;
+  } else if (eventName) {
     dateDetail = `🍷 חג: ${eventName} (יום ${getHebrewDayName(dt.getDay())}, ${formatDateIL(dt)})`;
   } else {
     const friday = new Date(dt);
