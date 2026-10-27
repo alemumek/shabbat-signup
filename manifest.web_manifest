@@ -1,0 +1,16 @@
+{
+  "name": "שבת וחג אצל ההורים",
+  "short_name": "שבת וחג",
+  "description": "תיאום ארוחות שבת וחג",
+  "lang": "he",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F2ECDD",
+  "theme_color": "#26337A",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
